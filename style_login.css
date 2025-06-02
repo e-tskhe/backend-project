@@ -1,0 +1,73 @@
+body {
+    font-family: "Montserrat", sans-serif;
+    background-color: black;
+    margin: 0;
+    padding: 20px;
+    color: white;
+}
+
+
+input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.auth-section {
+    display: block;
+    margin-bottom: 50px;
+    border-radius: 5px;
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    background-color: #363636;
+    padding: 30px;
+    border-radius: 10px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group #password {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.auth-btn {
+    display: inline-block;
+    background-color: #f14d34;
+    border: none;
+    cursor: pointer;
+    max-width: 600px;
+    margin: 5px;
+    padding: 12px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.auth-btn:hover {
+    background-color: #aa3725;
+}
