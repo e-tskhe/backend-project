@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $db = getDBConnection();
 
             $stmt = $db->prepare("SELECT id, username, password FROM support_users WHERE username = :username");
-            $stmt->execute([':username' => $input['username']]);
+            $stmt->execute([':username' => $username]);
             $user = $stmt->fetch();
 
             if ($user && md5($_POST['password']) === $user['password_hash']) {

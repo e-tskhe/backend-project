@@ -5,6 +5,7 @@ header("X-Content-Type-Options: nosniff");
 header("X-XSS-Protection: 1; mode=block");
 header("Referrer-Policy: no-referrer-when-downgrade");
 
+// Настройки сессии
 session_set_cookie_params([
     'lifetime' => 86400,
     'path' => '/',
@@ -27,13 +28,22 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// Получаем входные данные
+$input = json_decode(file_get_contents('php://input'), true);
+if (json_last_error() !== JSON_ERROR_NONE) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid JSON format']);
+    exit;
+}
+
+// Проверка CSRF токена
 if (empty($input['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $input['csrf_token'])) {
     http_response_code(403);
     echo json_encode(['error' => 'Неверный CSRF токен']);
     exit;
 }
 
-
+// Валидация данных
 $errors = [];
 
 if (empty($input['name']) || !preg_match('/^[А-Яа-яЁё\s\-]+$/u', $input['name'])) {
@@ -55,7 +65,6 @@ if (empty($input['message']) || strlen($input['message']) > 1000) {
 if (empty($input['contract']) || $input['contract'] !== true) {
     $errors['contract'] = 'Необходимо согласие на обработку данных';
 }
-
 
 if (!empty($errors)) {
     http_response_code(422);
@@ -143,4 +152,3 @@ try {
         'message' => 'Произошла внутренняя ошибка сервера'
     ]);
 }
-?>
