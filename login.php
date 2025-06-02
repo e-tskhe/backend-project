@@ -5,12 +5,10 @@ header("X-XSS-Protection: 1; mode=block");
 header("Referrer-Policy: no-referrer-when-downgrade");
 header('Content-Type: text/html; charset=UTF-8');
 
+
 require_once 'db.php';
 require_once 'tokens.php';
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+generateCSRFToken();
 
 if (!empty($_SESSION['login'])) {
     header('Location: profile.php');
@@ -19,15 +17,17 @@ if (!empty($_SESSION['login'])) {
 
 $error = '';
 
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
-    
-    if (empty($username)) {
+    if (empty($_POST['username'])) {
         $error = 'Введите логин';
-    } elseif (empty($password)) {
+    }
+    elseif (empty($_POST['password'])) {
         $error = 'Введите пароль';
-    } else {
+    }
+    else {
         try {
             $db = getDBConnection();
 
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute([':username' => $username]);
             $user = $stmt->fetch();
 
-            if ($user && password_verify($password, $user['password'])) {
+            if ($user && md5($_POST['password']) === $user['password_hash']) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['login'] = $user['username'];
 
@@ -44,15 +44,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     'message' => 'Авторизация успешна',
                     'profile_url' => '/profile.php'
                 ]);
+
                 exit;
-            } else {
+            }
+            else {
                 http_response_code(401);
                 echo json_encode(['error' => 'Неверное имя пользователя или пароль']);
             }
         } catch (PDOException $e) {
-            error_log('Database error: ' . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['error' => 'Ошибка базы данных']);
+            $error = "Ошибка базы данных.";
         }
     }
 }

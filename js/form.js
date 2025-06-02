@@ -3,45 +3,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const supportForm = document.getElementById('supportForm');
     const responseMessage = document.getElementById('response-message');
     
-    // Функция для отображения сообщений
-    function showMessage(type, message, details = null) {
-        if (!responseMessage) return;
-        
-        const alertClass = type === 'error' ? 'alert-danger' : 'alert-success';
-        let messageHtml = `
-            <div class="alert ${alertClass}">
-                <p>${message}</p>
-        `;
-        
-        if (details) {
-            messageHtml += `<pre>${JSON.stringify(details, null, 2)}</pre>`;
-        }
-        
-        messageHtml += `</div>`;
-        
-        responseMessage.innerHTML = messageHtml;
-        responseMessage.style.display = 'block';
-        
-        // Автоматическое скрытие через 5 секунд
-        setTimeout(() => {
-            responseMessage.style.display = 'none';
-        }, 5000);
-    }
-
     // Обработка формы входа
     if (loginForm) {
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const formData = new FormData(loginForm);
-            const formDataObj = Object.fromEntries(formData.entries());
+            // Валидация на клиенте
+            if (!loginForm.checkValidity()) {
+                showError('Пожалуйста, заполните все обязательные поля');
+                return;
+            }
+
+            const formData = {
+                username: loginForm.elements.username.value.trim(),
+                password: loginForm.elements.password.value.trim(),
+                csrf_token: loginForm.elements.csrf_token.value
+            };
             
             fetch('/login.php', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
-                body: new URLSearchParams(formDataObj)
+                body: JSON.stringify(formData)
             })
             .then(response => {
                 if (!response.ok) {
@@ -51,14 +36,15 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if (data.success) {
+                    // Перенаправляем на страницу профиля после успешной авторизации
                     window.location.href = data.profile_url || '/profile.php';
                 } else {
-                    showMessage('error', data.error || 'Произошла ошибка при авторизации');
+                    showError(data.error || 'Произошла ошибка при авторизации');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showMessage('error', error.message || 'Неизвестная ошибка при авторизации');
+                showError(error.message || 'Неизвестная ошибка при авторизации');
             });
         });
     }
@@ -70,18 +56,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Валидация на клиенте
             if (!supportForm.checkValidity()) {
-                showMessage('error', 'Пожалуйста, заполните все обязательные поля правильно');
+                showError('Пожалуйста, заполните все обязательные поля правильно');
                 return;
             }
 
-            const formData = new FormData(supportForm);
-            const formDataObj = {
-                name: formData.get('name').trim(),
-                tel: formData.get('tel').trim(),
-                email: formData.get('email').trim(),
-                message: formData.get('message').trim(),
-                contract: formData.get('contract') === 'on',
-                csrf_token: formData.get('csrf_token')
+            const formData = {
+                name: supportForm.elements.name.value.trim(),
+                tel: supportForm.elements.tel.value.trim(),
+                email: supportForm.elements.email.value.trim(),
+                message: supportForm.elements.message.value.trim(),
+                contract: supportForm.elements.contract.checked,
+                csrf_token: supportForm.elements.csrf_token.value
             };
             
             fetch(supportForm.action, {
@@ -90,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify(formDataObj)
+                body: JSON.stringify(formData)
             })
             .then(response => {
                 if (!response.ok) {
@@ -100,29 +85,43 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if (data.success) {
-                    showMessage('success', data.message || 'Форма успешно отправлена!');
-                    
-                    // Очистка формы для новых пользователей
+                    // Очистка формы только если это новая заявка (не авторизованный пользователь)
                     if (!data.username) {
                         supportForm.reset();
                     }
                     
-                    // Обработка данных нового пользователя
+                    let successMessage = `
+                        <div class="alert alert-success">
+                            <p>${data.message || 'Форма успешно отправлена!'}</p>
+                    `;
+                    
+                    // Добавляем ссылку на профиль если есть
+                    if (data.profile_url) {
+                        successMessage += `<p><a href="${data.profile_url}">Перейти в профиль</a></p>`;
+                    }
+                    
+                    successMessage += `</div>`;
+                    
+                    responseMessage.innerHTML = successMessage;
+                    responseMessage.style.display = 'block';
+                    
+                    // Показываем данные для входа если это регистрация
                     if (data.username && data.password) {
-                        const loginConfirmed = confirm(
-                            `Ваш логин: ${data.username}\nВаш пароль: ${data.password}\n\nХотите войти в систему сейчас?`
-                        );
+                        alert(`Ваш логин: ${data.username}\nВаш пароль: ${data.password}\nСохраните эти данные!`);
                         
-                        if (loginConfirmed) {
+                        // Предлагаем войти
+                        if (confirm('Хотите войти в систему сейчас?')) {
+                            // Автоматический вход
                             fetch('/login.php', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
                                 },
                                 body: JSON.stringify({
                                     username: data.username,
                                     password: data.password,
-                                    csrf_token: formDataObj.csrf_token
+                                    csrf_token: formData.csrf_token
                                 })
                             })
                             .then(response => response.json())
@@ -134,17 +133,43 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 } else {
-                    showMessage('error', data.error || 'Произошла ошибка при отправке формы');
+                    showError(data.error || 'Произошла ошибка при отправке формы');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showMessage('error', error.message || 'Неизвестная ошибка при отправке формы', error.details);
+                showError(error.message || 'Неизвестная ошибка при отправке формы');
             });
         });
     }
     
-    // Маска для телефона
+    // Функция для отображения ошибок
+    function showError(message, details) {
+        if (responseMessage) {
+            let errorHtml = `
+                <div class="alert alert-danger">
+                    <p>${message}</p>
+            `;
+            
+            if (details) {
+                errorHtml += `<pre>${JSON.stringify(details, null, 2)}</pre>`;
+            }
+            
+            errorHtml += `</div>`;
+            
+            responseMessage.innerHTML = errorHtml;
+            responseMessage.style.display = 'block';
+            
+            // Автоматическое скрытие через 5 секунд
+            setTimeout(() => {
+                responseMessage.style.display = 'none';
+            }, 5000);
+        } else {
+            alert(message);
+        }
+    }
+    
+    // Добавляем маску для телефона
     const phoneInput = document.querySelector('input[name="tel"]');
     if (phoneInput) {
         phoneInput.addEventListener('input', function(e) {
