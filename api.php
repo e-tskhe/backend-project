@@ -8,7 +8,7 @@ header("Referrer-Policy: no-referrer-when-downgrade");
 session_start();
 
 require_once 'tokens.php';
-verifyCSRFToken();
+// verifyCSRFToken();
 
 require_once 'db.php';
 $db = getDBConnection();
