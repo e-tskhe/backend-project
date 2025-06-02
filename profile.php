@@ -2,7 +2,7 @@
 session_start();
 header("Content-Type: text/html; charset=UTF-8");
 
-$config = require 'config.php';
+$config = require '../config.php';
 require_once 'db.php';
 
 $db = getDBConnection();
