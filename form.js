@@ -43,36 +43,14 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     form.reset();
-                    responseMessage.innerHTML = `
-                        <div class="alert alert-success">
-                            <p>${data.message || 'Форма успешно отправлена!'}</p>
-                            ${data.profile_url ? `<p><a href="${data.profile_url}">Перейти в профиль</a></p>` : ''}
-                        </div>
-                    `;
-                    responseMessage.style.display = 'block';
-                    
-                    // Если есть данные пользователя (при регистрации)
-                    if (data.username && data.password) {
-                        alert(`Ваш логин: ${data.username}\nВаш пароль: ${data.password}\nСохраните эти данные!`);
-                    }
+                    // Показываем успешное сообщение
                 } else {
-                    responseMessage.innerHTML = `
-                        <div class="alert alert-danger">
-                            <p>${data.error || 'Произошла ошибка при отправке формы'}</p>
-                            ${data.details ? `<pre>${JSON.stringify(data.details, null, 2)}</pre>` : ''}
-                        </div>
-                    `;
-                    responseMessage.style.display = 'block';
+                    // Показываем ошибку
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                responseMessage.innerHTML = `
-                    <div class="alert alert-danger">
-                        <p>Ошибка при отправке формы: ${error.message || 'Неизвестная ошибка'}</p>
-                    </div>
-                `;
-                responseMessage.style.display = 'block';
+                // Показываем ошибку
             });
         });
     }
