@@ -826,8 +826,7 @@
           <div class="col-md-2"></div>
           <div class="col-md-5 col-sm-6">
             <form id="supportForm" action="api.php" method="POST">
-              <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
-              
+              <input type="hidden" name="csrf_token" value="<?php require_once 'tokens.php'; echo generateCSRFToken(); ?>">              
               <p>
                   <input class="col-12" name="name" type="text" required placeholder="Ваше имя">
               </p>
@@ -852,7 +851,8 @@
                   </label>
               </p>
 
-              <button type="submit" class="col-12" id="contact-us">СВЯЖИТЕСЬ С НАМИ</button>            </form>
+              <button type="submit" class="col-12" id="contact-us">СВЯЖИТЕСЬ С НАМИ</button>            
+            </form>
             
             <div id="response-message" style="display: none; margin-top: 20px;"></div>
           </div>
