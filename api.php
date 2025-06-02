@@ -24,22 +24,17 @@ require_once 'tokens.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
+    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
     exit;
 }
 
-// Получаем входные данные
-$input = json_decode(file_get_contents('php://input'), true);
-if (json_last_error() !== JSON_ERROR_NONE) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Invalid JSON format']);
-    exit;
-}
+// Получаем данные из формы
+$input = $_POST; // Изменено с json_decode на $_POST
 
 // Проверка CSRF токена
 if (empty($input['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $input['csrf_token'])) {
     http_response_code(403);
-    echo json_encode(['error' => 'Неверный CSRF токен']);
+    echo json_encode(['success' => false, 'error' => 'Неверный CSRF токен']);
     exit;
 }
 
@@ -62,7 +57,7 @@ if (empty($input['message']) || strlen($input['message']) > 1000) {
     $errors['message'] = 'Сообщение должно быть не длиннее 1000 символов';
 }
 
-if (empty($input['contract']) || $input['contract'] !== true) {
+if (empty($input['contract']) || $input['contract'] !== 'on') { // Изменено для стандартного чекбокса
     $errors['contract'] = 'Необходимо согласие на обработку данных';
 }
 
@@ -143,12 +138,5 @@ try {
         'error' => 'Database error',
         'message' => 'Произошла ошибка при обработке запроса'
     ]);
-} catch(Exception $e) {
-    error_log('Error: ' . $e->getMessage());
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'error' => 'Internal server error',
-        'message' => 'Произошла внутренняя ошибка сервера'
-    ]);
 }
+?>
