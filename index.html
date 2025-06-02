@@ -829,55 +829,30 @@
               <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
               
               <p>
-                <input class="col-12"
-                  name="name"
-                  type="text"
-                  pattern="^[А-Яа-яЁё\s]+$"
-                  title="ФИО должно содержать только буквы"
-                  required
-                  placeholder="Ваше имя"
-                />
+                  <input class="col-12" name="name" type="text" required placeholder="Ваше имя">
               </p>
 
               <p>
-                <input class="col-12"
-                  name="tel"
-                  required
-                  placeholder="Телефон"
-                  type="tel"
-                  pattern="^[0-9]+$"
-                  title="Номер телефона должен содержать только цифры"
-                />
+                  <input class="col-12" name="tel" required placeholder="Телефон" type="tel">
               </p>
 
               <p>
-                <input class="col-12"
-                  name="email"
-                  required
-                  placeholder="E-mail"
-                  type="email"
-                />
+                  <input class="col-12" name="email" required placeholder="E-mail" type="email">
               </p>
 
               <p>
-                <textarea class="col-12"
-                name="message" placeholder="Ваш комментарий"></textarea>
+                  <textarea class="col-12" name="message" required placeholder="Ваш комментарий"></textarea>
               </p>
 
               <p id="checkbox">
-                <input
-                id="pdp" type="checkbox" name="contract" required />
-                <label
-                  for="pdp"
-                  id="pdp-label"
-                  >Отправляя заявку, я даю согласие на
-                  <a href="">обработку своих персональных данных.</a>
-                </label>
+                  <input id="pdp" type="checkbox" name="contract" required>
+                  <label for="pdp" id="pdp-label">
+                      Отправляя заявку, я даю согласие на
+                      <a href="">обработку своих персональных данных.</a>
+                  </label>
               </p>
 
-              <input class="col-12"
-              id="contact-us" type="submit" value="СВЯЖИТЕСЬ С НАМИ" />
-            </form>
+              <button type="submit" class="col-12" id="contact-us">СВЯЖИТЕСЬ С НАМИ</button>            </form>
             
             <div id="response-message" style="display: none; margin-top: 20px;"></div>
           </div>
