@@ -9,6 +9,7 @@ header('Content-Type: text/html; charset=UTF-8');
 require_once 'db.php';
 require_once 'tokens.php';
 generateCSRFToken();
+$_SESSION['csrf_token'] = generateCSRFToken();
 
 if (!empty($_SESSION['login'])) {
     header('Location: profile.php');
@@ -19,6 +20,7 @@ $error = '';
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    verifyCSRFToken();
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
     if (empty($_POST['username'])) {
@@ -26,6 +28,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     elseif (empty($_POST['password'])) {
         $error = 'Введите пароль';
+    }
+    if (!empty($error)) {
+        http_response_code(400);
+        echo json_encode(['error' => $error]);
+        exit;
     }
     else {
         try {
@@ -35,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute([':username' => $username]);
             $user = $stmt->fetch();
 
-            if ($user && md5($_POST['password']) === $user['password_hash']) {
+            if ($user && password_verify($_POST['password'], $user['password'])) {               
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['login'] = $user['username'];
 
@@ -59,45 +66,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Авторизация</title>
-    <link rel="stylesheet" href="style_login.css">
-</head>
-<body>
-    <div class="auth-section">
-        <form method="POST" class="auth-form">
-            <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
-            
-            <h3>Вход в систему</h3>
-
-            <?php if (!empty($error)): ?>
-                <div class="error"><?= htmlspecialchars($error) ?></div>
-            <?php endif; ?>
-
-            <div class="form-group">
-                <label for="username">Логин:</label>
-                <input type="text" id="username" name="username" required 
-                    value="<?= !empty($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>">
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Пароль:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-
-            <button type="submit" class="auth-btn">ВОЙТИ</button>
-
-            <?php if (!empty($_COOKIE['username']) && !empty($_COOKIE['password'])): ?>
-                <div class="auth-hint">
-                    Ваши данные для входа:<br>
-                    Логин: <?= htmlspecialchars($_COOKIE['username']) ?><br>
-                    Пароль: <?= htmlspecialchars($_COOKIE['password']) ?>
-                </div>
-            <?php endif; ?>
-        </form>
-    </div>
-</body>
-</html>

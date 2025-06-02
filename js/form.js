@@ -1,8 +1,27 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.getElementById('loginForm');
-    const supportForm = document.getElementById('supportForm');
+
+function showMessage(type, message) {
     const responseMessage = document.getElementById('response-message');
-    
+    if (responseMessage) {
+        responseMessage.innerHTML = `
+            <div class="alert alert-${type}">
+                ${message}
+            </div>
+        `;
+        responseMessage.style.display = 'block';
+        setTimeout(() => {
+            responseMessage.style.display = 'none';
+        }, 5000);
+    } else {
+        alert(message);
+    }
+}
+
+function showError(message) {
+    showMessage('error', message);
+}
+// Обработчик формы входа
+    const loginForm = document.getElementById('loginForm');
     // Обработка формы входа
     if (loginForm) {
         loginForm.addEventListener('submit', function(e) {
@@ -40,6 +59,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.href = data.profile_url || '/profile.php';
                 } else {
                     showError(data.error || 'Произошла ошибка при авторизации');
+                }
+            })
+            .then(data => {
+                if (data.username && data.password) {
+                    // Показываем сообщение с данными для входа
+                    showMessage('success', `Форма успешно отправлена! Ваши данные для входа:<br>Логин: ${data.username}<br>Пароль: ${data.password}`);
+                    
+                    // Перенаправляем на страницу профиля после задержки
+                    setTimeout(() => {
+                        window.location.href = data.profile_url;
+                    }, 5000);
+                } else {
+                    showMessage('success', data.message || 'Данные успешно обновлены');
                 }
             })
             .catch(error => {
@@ -192,4 +224,6 @@ document.addEventListener('DOMContentLoaded', function() {
             this.value = formattedValue;
         });
     }
+
+    
 });
