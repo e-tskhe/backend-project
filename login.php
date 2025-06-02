@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     else {
         try {
-            $pdo = getDBConnection();
+            $db = getDBConnection();
 
             $stmt = $db->prepare("SELECT id, username, password FROM support_users WHERE username = :username");
             $stmt->execute([':username' => $input['username']]);
