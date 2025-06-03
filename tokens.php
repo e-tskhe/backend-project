@@ -11,10 +11,6 @@ function generateCSRFToken() {
 }
 
 function validateCSRFToken($token) {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
     if (empty($_SESSION['csrf_token']) || empty($token)) {
         return false;
     }

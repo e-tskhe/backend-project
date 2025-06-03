@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             fetch(supportForm.action, {
                 method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: formData
             })
             .then(response => {

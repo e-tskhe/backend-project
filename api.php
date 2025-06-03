@@ -21,13 +21,12 @@ try {
         throw new Exception('Разрешен только метод POST');
     }
 
-    if ($_SERVER['CONTENT_TYPE'] === 'application/json') {
+    $input = $_POST;
+    if (empty($input)) {
         $input = json_decode(file_get_contents('php://input'), true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception('Неверный JSON');
+            throw new Exception('Неверные данные');
         }
-    } else {
-        $input = $_POST;
     }
 
     // Проверка CSRF-токена только для POST-запросов
