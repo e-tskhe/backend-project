@@ -10,7 +10,7 @@ function generateCSRFToken() {
     return $_SESSION['csrf_token'];
 }
 
-function validateCSRFToken() {
+function validateCSRFToken($token) {
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
@@ -19,5 +19,6 @@ function validateCSRFToken() {
         return false;
     }
 
-    return hash_equals($_SESSION['csrf_token'], $token);}
+    return hash_equals($_SESSION['csrf_token'], $token);
+}
 ?>

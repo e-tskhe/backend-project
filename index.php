@@ -856,8 +856,6 @@
               </p>
 
               <button type="submit" class="col-12" id="contact-us">СВЯЖИТЕСЬ С НАМИ</button>      
-              
-              <a href="login.php">Войти</a>
             </form>
       
             <div id="response-message" style="display: none; margin-top: 20px;"></div>
