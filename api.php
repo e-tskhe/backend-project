@@ -24,7 +24,7 @@ require_once 'db.php';
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
-    // Проверка CSRF-токена
+    // Проверка CSRF-токена только для POST-запросов
     if ($method === 'POST') {
         if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
             throw new Exception('Недействительный CSRF-токен');
