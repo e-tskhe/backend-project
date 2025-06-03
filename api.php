@@ -28,7 +28,7 @@ try {
 
     // Проверка CSRF-токена только для POST-запросов
     if ($method === 'POST') {
-        if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        if (!isset($input['csrf_token']) || !validateCSRFToken($input['csrf_token'])) {
             throw new Exception('Недействительный CSRF-токен');
         }
     }
