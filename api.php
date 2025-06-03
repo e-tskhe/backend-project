@@ -1,4 +1,7 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 session_set_cookie_params([
     'lifetime' => 86400,
@@ -9,9 +12,6 @@ session_set_cookie_params([
     'samesite' => 'Strict'
 ]);
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 header('Content-Type: application/json; charset=UTF-8');
 header("X-Frame-Options: DENY");
 header("X-Content-Type-Options: nosniff");
