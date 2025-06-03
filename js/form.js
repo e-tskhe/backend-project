@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const profileForm = document.getElementById('profileForm');
+    const supportForm = document.getElementById('supportForm');
     const responseMessage = document.getElementById('response-message');
     
-    if (profileForm) {
-        profileForm.addEventListener('submit', function(e) {
+    if (supportForm) {
+        supportForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const formData = new FormData(profileForm);
+            const formData = new FormData(supportForm);
             const formDataObj = {
                 name: formData.get('name').trim(),
                 tel: formData.get('tel').trim(),
@@ -17,18 +17,17 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             // Показываем индикатор загрузки
-            const submitBtn = profileForm.querySelector('button[type="submit"]');
+            const submitBtn = supportForm.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn.textContent;
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Отправка...';
             
-            fetch(profileForm.action, {
+            fetch(supportForm.action, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: JSON.stringify(formDataObj)
+                body: new URLSearchParams(formData).toString()
             })
             .then(response => {
                 if (!response.ok) {
@@ -37,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
-                showMessage('success', data.message);
+                showMessage('success', data.message || 'Форма успешно отправлена');
                 if (data.redirect) {
                     window.location.href = data.redirect;
                 }

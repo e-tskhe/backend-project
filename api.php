@@ -13,33 +13,37 @@ session_set_cookie_params([
     'httponly' => true,
     'samesite' => 'Strict'
 ]);
-session_start();
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 require_once 'tokens.php';
 require_once 'db.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
-$input = json_decode(file_get_contents('php://input'), true);
 
 try {
     // Проверка CSRF-токена
-    if (!isset($input['csrf_token']) || !validateCSRFToken($input['csrf_token'])) {
-        throw new Exception('Недействительный CSRF-токен');
+    if ($method === 'POST') {
+        if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+            throw new Exception('Недействительный CSRF-токен');
+        }
     }
 
     $pdo = getDBConnection();
     
     if ($method === 'POST') {
         // Проверка данных
-        if (empty($input['name']) || empty($input['tel']) || empty($input['email']) || empty($input['message'])) {
+        if (empty($_POST['name']) || empty($_POST['tel']) || empty($_POST['email']) || empty($_POST['message'])) {
             throw new Exception('Все поля обязательны для заполнения');
         }
         
-        if (!filter_var($input['email'], FILTER_VALIDATE_EMAIL)) {
+        if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
             throw new Exception('Некорректный email');
         }
         
-        if (empty($input['contract'])) {
+        if (empty($_POST['contract'])) {
             throw new Exception('Необходимо согласие на обработку данных');
         }
         
@@ -49,7 +53,7 @@ try {
         if ($userId) {
             // Для авторизованного пользователя - создаем новую заявку
             $stmt = $pdo->prepare("INSERT INTO support_requests (user_id, name, tel, email, message) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$userId, $input['name'], $input['tel'], $input['email'], $input['message']]);
+            $stmt->execute([$userId, $_POST['name'], $_POST['tel'], $_POST['email'], $_POST['message']]);
             
             echo json_encode(['success' => true, 'message' => 'Заявка успешно создана']);
         } else {
@@ -65,7 +69,7 @@ try {
             
             // Создаем запрос
             $stmt = $pdo->prepare("INSERT INTO support_requests (user_id, name, tel, email, message) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$userId, $input['name'], $input['tel'], $input['email'], $input['message']]);
+            $stmt->execute([$userId, $_POST['name'], $_POST['tel'], $_POST['email'], $_POST['message']]);
             
             // Устанавливаем сессию для нового пользователя
             $_SESSION['user_id'] = $userId;
