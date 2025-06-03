@@ -1,38 +1,34 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('supportForm');
+    const profileForm = document.getElementById('profileForm');
     const responseMessage = document.getElementById('response-message');
     
-    if (form) {
-        form.addEventListener('submit', function(e) {
+    if (profileForm) {
+        profileForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Валидация на клиенте
-            if (!form.checkValidity()) {
-                responseMessage.innerHTML = `
-                    <div class="alert alert-danger">
-                        <p>Пожалуйста, заполните все обязательные поля правильно</p>
-                    </div>
-                `;
-                responseMessage.style.display = 'block';
-                return;
-            }
-
-            const formData = {
-                name: form.elements.name.value.trim(),
-                tel: form.elements.tel.value.trim(),
-                email: form.elements.email.value.trim(),
-                message: form.elements.message.value.trim(),
-                contract: form.elements.contract.checked,
-                csrf_token: form.elements.csrf_token.value
+            const formData = new FormData(profileForm);
+            const formDataObj = {
+                name: formData.get('name').trim(),
+                tel: formData.get('tel').trim(),
+                email: formData.get('email').trim(),
+                message: formData.get('message').trim(),
+                contract: formData.get('contract') === 'on',
+                csrf_token: formData.get('csrf_token')
             };
             
-            fetch(form.action, {
+            // Показываем индикатор загрузки
+            const submitBtn = profileForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Отправка...';
+            
+            fetch(profileForm.action, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(formDataObj)
             })
             .then(response => {
                 if (!response.ok) {
@@ -41,39 +37,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
-                if (data.success) {
-                    form.reset();
-                    responseMessage.innerHTML = `
-                        <div class="alert alert-success">
-                            <p>${data.message || 'Форма успешно отправлена!'}</p>
-                            ${data.profile_url ? `<p><a href="${data.profile_url}">Перейти в профиль</a></p>` : ''}
-                        </div>
-                    `;
-                    responseMessage.style.display = 'block';
-                    
-                    // Если есть данные пользователя (при регистрации)
-                    if (data.username && data.password) {
-                        alert(`Ваш логин: ${data.username}\nВаш пароль: ${data.password}\nСохраните эти данные!`);
-                    }
-                } else {
-                    responseMessage.innerHTML = `
-                        <div class="alert alert-danger">
-                            <p>${data.error || 'Произошла ошибка при отправке формы'}</p>
-                            ${data.details ? `<pre>${JSON.stringify(data.details, null, 2)}</pre>` : ''}
-                        </div>
-                    `;
-                    responseMessage.style.display = 'block';
+                showMessage('success', data.message);
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                }
+                if (data.username && data.password) {
+                    showMessage('info', `Логин: ${data.username}, Пароль: ${data.password}`);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                responseMessage.innerHTML = `
-                    <div class="alert alert-danger">
-                        <p>Ошибка при отправке формы: ${error.message || 'Неизвестная ошибка'}</p>
-                    </div>
-                `;
-                responseMessage.style.display = 'block';
+                showMessage('error', error.error || error.message || 'Ошибка при отправке формы');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
             });
         });
+    }
+    
+    function showMessage(type, message) {
+        if (!responseMessage) return;
+        
+        const alertClass = type === 'error' ? 'alert-danger' : 
+                          type === 'success' ? 'alert-success' : 'alert-info';
+        responseMessage.innerHTML = `
+            <div class="alert ${alertClass}">
+                ${message}
+            </div>
+        `;
+        responseMessage.style.display = 'block';
+        
+        setTimeout(() => {
+            responseMessage.style.display = 'none';
+        }, 5000);
     }
 });
