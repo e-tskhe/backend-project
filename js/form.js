@@ -1,26 +1,38 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const supportForm = document.getElementById('supportForm');
+    const form = document.getElementById('supportForm');
     const responseMessage = document.getElementById('response-message');
     
-    if (supportForm) {
-        supportForm.addEventListener('submit', function(e) {
+    if (form) {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Показываем индикатор загрузки
-            const submitBtn = supportForm.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Отправка...';
+            // Валидация на клиенте
+            if (!form.checkValidity()) {
+                responseMessage.innerHTML = `
+                    <div class="alert alert-danger">
+                        <p>Пожалуйста, заполните все обязательные поля правильно</p>
+                    </div>
+                `;
+                responseMessage.style.display = 'block';
+                return;
+            }
+
+            const formData = {
+                name: form.elements.name.value.trim(),
+                tel: form.elements.tel.value.trim(),
+                email: form.elements.email.value.trim(),
+                message: form.elements.message.value.trim(),
+                contract: form.elements.contract.checked,
+                csrf_token: form.elements.csrf_token.value
+            };
             
-            // Собираем данные формы
-            const formData = new FormData(supportForm);
-            
-            fetch(supportForm.action, {
+            fetch(form.action, {
                 method: 'POST',
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
-                body: formData
+                body: JSON.stringify(formData)
             })
             .then(response => {
                 if (!response.ok) {
@@ -30,23 +42,37 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if (data.success) {
-                    if (data.credentials) {
-                        alert(`Аккаунт создан!\nЛогин: ${data.credentials.username}\nПароль: ${data.credentials.password}`);
-                    }
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
+                    form.reset();
+                    responseMessage.innerHTML = `
+                        <div class="alert alert-success">
+                            <p>${data.message || 'Форма успешно отправлена!'}</p>
+                            ${data.profile_url ? `<p><a href="${data.profile_url}">Перейти в профиль</a></p>` : ''}
+                        </div>
+                    `;
+                    responseMessage.style.display = 'block';
+                    
+                    // Если есть данные пользователя (при регистрации)
+                    if (data.username && data.password) {
+                        alert(`Ваш логин: ${data.username}\nВаш пароль: ${data.password}\nСохраните эти данные!`);
                     }
                 } else {
-                    alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                    responseMessage.innerHTML = `
+                        <div class="alert alert-danger">
+                            <p>${data.error || 'Произошла ошибка при отправке формы'}</p>
+                            ${data.details ? `<pre>${JSON.stringify(data.details, null, 2)}</pre>` : ''}
+                        </div>
+                    `;
+                    responseMessage.style.display = 'block';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Ошибка при отправке формы: ' + (error.error || error.message || 'Неизвестная ошибка'));
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalBtnText;
+                responseMessage.innerHTML = `
+                    <div class="alert alert-danger">
+                        <p>Ошибка при отправке формы: ${error.message || 'Неизвестная ошибка'}</p>
+                    </div>
+                `;
+                responseMessage.style.display = 'block';
             });
         });
     }

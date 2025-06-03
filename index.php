@@ -1,3 +1,8 @@
+<?php
+require_once 'tokens.php';
+generateCSRFToken();
+?>
+
 <!DOCTYPE html>
 <html lang="ru">
   <head>
@@ -12,7 +17,7 @@
       crossorigin="anonymous"
     />
 
-    <script src="js/form.js" defer></script>
+    <!-- <script src="js/form.js" defer></script> -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
@@ -824,11 +829,7 @@
           <div class="col-md-2"></div>
           <div class="col-md-5 col-sm-6">
             <form id="supportForm" action="api.php" method="POST">
-              <?php 
-                require_once 'tokens.php';
-                $csrfToken = generateCSRFToken();
-              ?>
-              <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">            
+              <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">              
               <p>
                   <input class="col-12" name="name" type="text" required placeholder="Ваше имя">
               </p>
@@ -853,19 +854,15 @@
                   </label>
               </p>
 
-              <button type="submit" class="col-12" id="contact-us">СВЯЖИТЕСЬ С НАМИ</button>      
+              <button type="submit" class="col-12" id="contact-us">СВЯЖИТЕСЬ С НАМИ</button> 
+              <a href='login.php' class='auth-btn'>Войти</a>           
             </form>
-      
+            
             <div id="response-message" style="display: none; margin-top: 20px;"></div>
-        </div>
-            
-
-
-            
-            
+          </div>
         </div>
       </div>
-    </div>
+    
 
       <footer>
         <div class="container">
@@ -901,7 +898,7 @@
             Drupal является зарегистрированной торговой маркой Dries Buytaert.
           </p>
         </div>
-      </footer></div>
+      </footer>
     </div>
 
     <script
