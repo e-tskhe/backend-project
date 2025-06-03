@@ -1,9 +1,4 @@
 <?php
-header('Content-Type: application/json; charset=UTF-8');
-header("X-Frame-Options: DENY");
-header("X-Content-Type-Options: nosniff");
-header("X-XSS-Protection: 1; mode=block");
-header("Referrer-Policy: no-referrer-when-downgrade");
 
 session_set_cookie_params([
     'lifetime' => 86400,
@@ -17,6 +12,11 @@ session_set_cookie_params([
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+header('Content-Type: application/json; charset=UTF-8');
+header("X-Frame-Options: DENY");
+header("X-Content-Type-Options: nosniff");
+header("X-XSS-Protection: 1; mode=block");
+header("Referrer-Policy: no-referrer-when-downgrade");
 
 require_once 'tokens.php';
 require_once 'db.php';
